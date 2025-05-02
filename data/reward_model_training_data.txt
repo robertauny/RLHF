@@ -1,0 +1,52 @@
+[
+    [
+        "A Study of Atezolizumab (MPDL3280A) Compared With a Platinum Agent (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Participants With Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Research on Atezolizumab (MPDL3280A) Versus Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC Patients [IMpower110]",
+        "Comparison of Atezolizumab (MPDL3280A) and Platinum-Based Chemotherapy (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]"
+    ],
+    [
+        "A Study of Atezolizumab (MPDL3280A) Versus Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Research Comparing Atezolizumab (MPDL3280A) and Platinum-Based Chemotherapy (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Study on Atezolizumab (MPDL3280A) Compared to Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]"
+    ],
+    [
+        "Atezolizumab (MPDL3280A) Study Compared With Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Study of Atezolizumab (MPDL3280A) Versus Platinum-Based Chemotherapy (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Research on Atezolizumab (MPDL3280A) Compared to Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]"
+    ],
+    [
+        "Comparison Study of Atezolizumab (MPDL3280A) and Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Atezolizumab (MPDL3280A) Versus Platinum-Based Chemotherapy (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Study Comparing Atezolizumab (MPDL3280A) and Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]"
+    ],
+    [
+        "Atezolizumab (MPDL3280A) Study Versus Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Research Comparing Atezolizumab (MPDL3280A) and Platinum-Based Chemotherapy (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Study of Atezolizumab (MPDL3280A) Compared With Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]"
+    ],
+    [
+        "A Study of Atezolizumab (MPDL3280A) Versus Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Research on Atezolizumab (MPDL3280A) Compared to Platinum-Based Chemotherapy (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Comparison of Atezolizumab (MPDL3280A) and Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]"
+    ],
+    [
+        "Atezolizumab (MPDL3280A) Study Compared With Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Study of Atezolizumab (MPDL3280A) Versus Platinum-Based Chemotherapy (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Research on Atezolizumab (MPDL3280A) Compared to Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]"
+    ],
+    [
+        "Comparison Study of Atezolizumab (MPDL3280A) and Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Atezolizumab (MPDL3280A) Versus Platinum-Based Chemotherapy (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Study Comparing Atezolizumab (MPDL3280A) and Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]"
+    ],
+    [
+        "Atezolizumab (MPDL3280A) Study Versus Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Research Comparing Atezolizumab (MPDL3280A) and Platinum-Based Chemotherapy (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Study of Atezolizumab (MPDL3280A) Compared With Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]"
+    ],
+    [
+        "A Study of Atezolizumab (MPDL3280A) Versus Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Research on Atezolizumab (MPDL3280A) Compared to Platinum-Based Chemotherapy (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]",
+        "Comparison of Atezolizumab (MPDL3280A) and Platinum Agents (Cisplatin or Carboplatin) + (Pemetrexed or Gemcitabine) in Stage IV Non-Squamous or Squamous NSCLC [IMpower110]"
+    ]
+]
