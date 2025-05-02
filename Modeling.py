@@ -731,13 +731,13 @@ class Modeling:
                     data_collator=lambda features: {
                         "input_ids": torch.tensor(
                             [f["input_ids"] for f in features]
-                        ),
+                        ).squeeze(1),
                         "attention_mask": torch.tensor(
                             [f["attention_mask"] for f in features]
-                        ),
+                        ).squeeze(1),
                         "decoder_input_ids": torch.tensor(
                             [f["decoder_input_ids"] for f in features]
-                        )
+                        ).squeeze(1)
                     }
                 )
 
