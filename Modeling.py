@@ -600,45 +600,45 @@ class Modeling:
 
             tokenized_dataset = tokenizer_function(dataset)
 
-            # integrate LoRA using PEFT
-            #
-            # adjust the following LoRA configuration as needed
-            #
-            # Note the task type
-            #
-            # for seq2seq model (e.g., t5) use TaskType.SEQ_2_SEQ_LM
-            # causal language model use TaskType.CAUSAL_LM
-            #
-            # use SVD to determine rank to use in LoRA
-            lora_rank = self.determine_lora_rank(tokenized_dataset)
-            # configure lora
-            lora_config = LoraConfig(
-                task_type=TaskType.SEQ_2_SEQ_LM,      # adjust if necessary
-                r=lora_rank,                          # LoRA rank (number of low-rank matrices)
-                lora_alpha=self.lora_scaling_factor,  # scaling factor for the LoRA updates
-                lora_dropout=self.lora_dropout_rate,  # dropout probability for LoRA layers
-            )
-
-            # wrap your original model with the LoRA adapter.
-            # only the LoRA parameters will be trainable.
-            # and re-enable hidden states
-            # and define decoder input ids as a
-            # list to prevent JSON serialization errors during trainer.train()
-
-            # the modified model with peft
-            self.model = get_peft_model(self.model, lora_config)
-
-            # handle serialization that causes issues during
-            # training when to_json_config is called but there
-            # is no child class of JSONEncoder in the file
-            # /usr/local/anaconda3/lib/python3.9/json/encoder.py
-            # where the default method is overridden to handle
-            # serialization of objects that are not serializable
-            self.model.config = self.model_config_serialization()
-
-            # train the model
-
             if self.is_reward_model:
+
+                # integrate LoRA using PEFT
+                #
+                # adjust the following LoRA configuration as needed
+                #
+                # Note the task type
+                #
+                # for seq2seq model (e.g., t5) use TaskType.SEQ_2_SEQ_LM
+                # causal language model use TaskType.CAUSAL_LM
+                #
+                # use SVD to determine rank to use in LoRA
+                lora_rank = self.determine_lora_rank(tokenized_dataset)
+                # configure lora
+                lora_config = LoraConfig(
+                    task_type=TaskType.SEQ_2_SEQ_LM,      # adjust if necessary
+                    r=lora_rank,                          # LoRA rank (number of low-rank matrices)
+                    lora_alpha=self.lora_scaling_factor,  # scaling factor for the LoRA updates
+                    lora_dropout=self.lora_dropout_rate,  # dropout probability for LoRA layers
+                )
+
+                # wrap your original model with the LoRA adapter.
+                # only the LoRA parameters will be trainable.
+                # and re-enable hidden states
+                # and define decoder input ids as a
+                # list to prevent JSON serialization errors during trainer.train()
+
+                # the modified model with peft
+                self.model = get_peft_model(self.model, lora_config)
+
+                # handle serialization that causes issues during
+                # training when to_json_config is called but there
+                # is no child class of JSONEncoder in the file
+                # /usr/local/anaconda3/lib/python3.9/json/encoder.py
+                # where the default method is overridden to handle
+                # serialization of objects that are not serializable
+                self.model.config = self.model_config_serialization()
+
+                # train the model
 
                 training_args = RewardConfig(
                     output_dir="./models/results",
@@ -728,6 +728,17 @@ class Modeling:
                     tokenizer=self.tokenizer,
                     args=training_args,
                     train_dataset=tokenized_dataset,
+                    data_collator=lambda features: {
+                        "input_ids": torch.tensor(
+                            [f["input_ids"] for f in features]
+                        ),
+                        "attention_mask": torch.tensor(
+                            [f["attention_mask"] for f in features]
+                        ),
+                        "decoder_input_ids": torch.tensor(
+                            [f["decoder_input_ids"] for f in features]
+                        )
+                    }
                 )
 
                 trainer.train()

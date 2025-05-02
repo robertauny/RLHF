@@ -1,0 +1,52 @@
+[
+    [
+        "A Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Compared With a Platinum Agent (Cisplatin or Carboplatin) in Combination With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Patients With Stage IV Non-Squamous Or Squamous NSCLC",
+        "Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Versus Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "A Phase III, Open Label, Randomized Study Comparing Atezolizumab (Anti-PD-L1 Antibody) and Platinum Agents (Cisplatin or Carboplatin) With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients"
+    ],
+    [
+        "A Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Versus Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "Phase III, Open Label, Randomized Study Comparing Atezolizumab (Anti-PD-L1 Antibody) and Platinum Agents (Cisplatin or Carboplatin) With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "A Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Compared With Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients"
+    ],
+    [
+        "A Phase III, Open Label, Randomized Study Comparing Atezolizumab (Anti-PD-L1 Antibody) and Platinum Agents (Cisplatin or Carboplatin) With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Versus Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "A Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Compared With Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients"
+    ],
+    [
+        "A Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Compared With Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "Phase III, Open Label, Randomized Study Comparing Atezolizumab (Anti-PD-L1 Antibody) and Platinum Agents (Cisplatin or Carboplatin) With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "A Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Versus Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients"
+    ],
+    [
+        "A Phase III, Open Label, Randomized Study Comparing Atezolizumab (Anti-PD-L1 Antibody) and Platinum Agents (Cisplatin or Carboplatin) With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Versus Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "A Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Compared With Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients"
+    ],
+    [
+        "A Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Compared With Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "Phase III, Open Label, Randomized Study Comparing Atezolizumab (Anti-PD-L1 Antibody) and Platinum Agents (Cisplatin or Carboplatin) With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "A Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Versus Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients"
+    ],
+    [
+        "A Phase III, Open Label, Randomized Study Comparing Atezolizumab (Anti-PD-L1 Antibody) and Platinum Agents (Cisplatin or Carboplatin) With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Versus Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "A Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Compared With Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients"
+    ],
+    [
+        "A Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Compared With Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "Phase III, Open Label, Randomized Study Comparing Atezolizumab (Anti-PD-L1 Antibody) and Platinum Agents (Cisplatin or Carboplatin) With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "A Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Versus Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients"
+    ],
+    [
+        "A Phase III, Open Label, Randomized Study Comparing Atezolizumab (Anti-PD-L1 Antibody) and Platinum Agents (Cisplatin or Carboplatin) With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Versus Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or",
+        "Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or"
+    ],
+    [
+        "A Phase III Study Comparing Atezolizumab (Anti-PD-L1 Antibody) and Platinum Agents (Cisplatin or Carboplatin) With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or Squamous NSCLC Patients",
+        "Phase III, Open Label, Randomized Study of Atezolizumab Versus Platinum Agents (Cisplatin or Carboplatin) Combined With Either Pemetrexed or Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or",
+        "Phase III, Open Label, Randomized Study of Atezolizumab (Anti-PD-L1 Antibody) Combined With Gemcitabine for PD-L1-Selected, Chemotherapy-Naive Stage IV Non-Squamous Or"
+    ]
+]
