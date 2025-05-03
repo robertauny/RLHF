@@ -37,7 +37,11 @@ import dotenv
 import numpy as np
 import pandas as pd
 
+from types import MethodType
+
 from datetime import datetime, timezone
+
+from torch.utils.data import DataLoader
 
 from transformers.models.t5.modeling_t5 import(
     T5Model,
@@ -48,6 +52,7 @@ from transformers import(
     AutoModel,
     AutoModelForSeq2SeqLM,
     AutoTokenizer,
+    DataCollatorForSeq2Seq,
     Trainer,
     TrainingArguments,
     T5Config,
@@ -64,13 +69,14 @@ from trl import (
     get_peft_config,
 )
 
+from trl.models.modeling_value_head import AutoModelForSeq2SeqLMWithValueHead
+
 from peft import (
     get_peft_model,
     TaskType,
     LoraConfig,
+    PeftModel,
 )
-
-from trl.trainer.utils import RewardDataCollatorWithPadding, SIMPLE_CHAT_TEMPLATE
 
 from datasets import Dataset
 
@@ -132,14 +138,24 @@ class CustomAutoModelConfig:
         # initialize by copying attributes from an existing instance
 
         if self.model is not None:
-            for key in dir(self.model.config):
-                # skip private/internal attributes
-                if not (key == "to_json_string" or key.startswith("_")):
+
+            skip_these = [
+                "to_json_string",
+                "_prepare_encoder_decoder_kwargs_for_generation"
+            ]
+
+        for key, value in self.model.config.to_dict().items():
+            # skip private/internal attributes
+            #if not (key == "to_json_string" or key.startswith("_")):
+            if not key in skip_these:
+                try:
                     setattr(
                         self,
                         key,
-                        getattr(self.model.config, key)
+                        value
                     )
+                except Exception as e:
+                    print(f"CustomAutoModelConfig [skipping: {e}]")
 
     # ************** methods and attributes that must be included **************
 
@@ -154,26 +170,34 @@ class CustomAutoModelConfig:
 
         config = {}
 
-        for key, value in self.to_dict().items():
+        for key in dir(self):
 
             if not (
                 key == "to_json_string" or \
-                key.startswith("_") or \
+                #key.startswith("_") or \
                 key == self.__class__.__name__
             ):
 
                 # convert tensor or ndarray to list for JSON serialization
-                if isinstance(value, torch.Tensor) or \
-                   isinstance(value, np.ndarray):
+                if isinstance(self[key], torch.Tensor) or \
+                   isinstance(self[key], np.ndarray):
 
-                    config[key] = value.tolist()
+                    config[key] = self[key].tolist()
 
                 # make a string out of everything else
                 else:
 
-                    config[key] = str(value)
+                    config[key] = str(self[key])
 
         return json.dumps(config)
+
+    ############################################################################
+    ##
+    ## Purpose:   Return values dictionary style
+    ##
+    ############################################################################
+    def __getitem__(self, key):
+        return getattr(self, key)
 
 ############################################################################
 ##
@@ -305,13 +329,11 @@ class Modeling:
             os.makedirs(self.model_dir, exist_ok=True)
 
         # set the model/tokenizer
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(
-            self.model_name,
-            force_download=True
+        self.model = AutoModelForSeq2SeqLMWithValueHead.from_pretrained(
+            self.model_name
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
-            self.tokenizer_name,
-            force_download=True
+            self.tokenizer_name
         )
 
         # add the model_name to the model.config
@@ -400,6 +422,36 @@ class Modeling:
 
     ############################################################################
     ##
+    ## Purpose:   Custom forward method to get rid of output_hidden_states
+    ##
+    ############################################################################
+    def _forward(self, *args, **kwargs):
+        kwargs.pop("output_hidden_states", None)
+        kwargs.pop("input_ids", None)
+        return self.original_forward(*args, **kwargs)
+
+    ############################################################################
+    ##
+    ## Purpose:   Required encoder/decoder function that has to be defined.
+    ##
+    ############################################################################
+    def _prepare_encoder_decoder_kwargs_for_generation(self, inputs, model_kwargs):
+
+        # ensure input IDs and attention mask are set
+        encoder_kwargs = {
+            kind : inputs.get(kind, None)
+            for kind in inputs
+        }
+    
+        # pass along additional arguments
+        encoder_kwargs.update({
+            k: v for k, v in model_kwargs.items() if k.startswith("encoder_")
+        })
+
+        return encoder_kwargs
+
+    ############################################################################
+    ##
     ## Purpose:   Padding and truncation of encodings.
     ##
     ############################################################################
@@ -446,6 +498,11 @@ class Modeling:
         else:
             subset = dataset
 
+        # we need the original model type to compute representations
+        model = AutoModelForSeq2SeqLM.from_pretrained(
+            self.model_name
+        )
+
         # prepare decoder input ids
         decoder_input_ids = self.tokenizer.encode("generate: ", return_tensors="pt")
 
@@ -462,8 +519,8 @@ class Modeling:
             }
             with torch.no_grad():
                 # forward pass to obtain hidden states
-                # adjust the arguments (or layer choice) based on your model’s API
-                outputs = self.model(
+                # adjust the arguments (or layer choice) based on model’s API
+                outputs = model(
                     **inputs,
                     output_hidden_states=True,
                     decoder_input_ids=decoder_input_ids
@@ -512,13 +569,16 @@ class Modeling:
     ############################################################################
     def model_config_serialization(self):
 
-        # decoder input ids and embeds
+        # add this missing method to the model object
+        self.model._prepare_encoder_decoder_kwargs_for_generation = MethodType(
+            self._prepare_encoder_decoder_kwargs_for_generation,
+            self.model
+        )
+
+        # decoder input ids
         decoder_input_ids = self.tokenizer.encode(
             "generate: ",
             return_tensors="pt"
-        )
-        decoder_inputs_embeds = self.model.get_input_embeddings()(
-            decoder_input_ids
         )
 
         # now finish the model config
@@ -527,7 +587,6 @@ class Modeling:
         ]
         self.model.config.output_hidden_states = True
         self.model.config.decoder_input_ids = decoder_input_ids
-        self.model.config.decoder_inputs_embeds = decoder_inputs_embeds
 
         # assign the serializable config to the model
         return CustomAutoModelConfig(self.model)
@@ -557,15 +616,15 @@ class Modeling:
                              data[i][self.response1],
                              return_tensors="pt"
                         )
-                        inputs["input_ids_chosen"] = chosen["input_ids"].to(self.device).squeeze()
-                        inputs["attention_mask_chosen"] = chosen["attention_mask"].to(self.device).squeeze()
+                        inputs["input_ids_chosen"] = chosen["input_ids"].to(self.device)#.squeeze()
+                        inputs["attention_mask_chosen"] = chosen["attention_mask"].to(self.device)#.squeeze()
                     if self.response2 in data[i]:
                         rejected = self.tokenizer(
                              data[i][self.response2],
                              return_tensors="pt"
                         )
-                        inputs["input_ids_rejected"] = rejected["input_ids"].to(self.device).squeeze()
-                        inputs["attention_mask_rejected"] = rejected["attention_mask"].to(self.device).squeeze()
+                        inputs["input_ids_rejected"] = rejected["input_ids"].to(self.device)#.squeeze()
+                        inputs["attention_mask_rejected"] = rejected["attention_mask"].to(self.device)#.squeeze()
                     inputs["decoder_input_ids"] = inputs["input_ids"].to(self.device)
                     outputs.append(inputs)
                 for row in outputs:
@@ -602,6 +661,133 @@ class Modeling:
 
             if self.is_reward_model:
 
+                # handle serialization that causes issues during
+                # training when to_json_config is called but there
+                # is no child class of JSONEncoder in the file
+                # /usr/local/anaconda3/lib/python3.9/json/encoder.py
+                # where the default method is overridden to handle
+                # serialization of objects that are not serializable
+                self.model.config = self.model_config_serialization()
+
+                # train the model
+
+                # now train the reinforcement learning model
+                # using the reward model just trained
+
+                sys.argv[0] = os.path.basename(__file__)
+
+                parser = HfArgumentParser((PPOConfig, ModelConfig))
+
+                ppo_training_args, model_args = parser.parse_args_into_dataclasses()
+
+                peft_config = get_peft_config(model_args)
+
+                training_args = RewardConfig(
+                    output_dir="./models/results",
+                    report_to=None,
+                    num_train_epochs=self.model_training_epochs,
+                    per_device_train_batch_size=dataset.__len__(),
+                    warmup_steps=min(500,dataset.__len__()),
+                    weight_decay=0.01,
+                    logging_dir="./logs",
+                    logging_steps=10,
+                    remove_unused_columns=False,
+                )
+
+                ppo_config = PPOConfig(
+                    learning_rate=training_args.learning_rate,
+                    batch_size=training_args.per_device_train_batch_size,
+                    mini_batch_size=training_args.per_device_train_batch_size,
+                    gamma=0.99,  # adjust based on expected reward decay
+                    kl_penalty="abs",  # ensures stable KL divergence updates
+                    seed=0,
+                    target_kl=0.01,
+                )
+
+                ppo_trainer = PPOTrainer(
+                    config=ppo_config,
+                    model=self.model,
+                    ref_model=self.model,
+                    tokenizer=self.tokenizer,
+                    dataset=tokenized_dataset,
+                    optimizer=torch.optim.AdamW,
+                    lr_scheduler=None,
+                    #data_collator=data_collator,
+                    #training_data_collator=data_collator,
+                )
+
+                dataloader = DataLoader(
+                    tokenized_dataset,
+                    batch_size=ppo_config.batch_size,
+                    shuffle=True
+                )
+
+                for batch in dataloader:
+                    cols = len(batch["input_ids"][0])
+                    rows = len(batch["input_ids"][0][0])
+                    for outcome in [["input_ids_chosen", 1.0], ["input_ids_rejected", 0.0]]:
+                        continue
+                        ppo_trainer.step(
+                            list(
+                                torch.tensor(
+                                    np.vstack((
+                                        list(
+                                            batch["input_ids"][0][i].numpy()
+                                        )
+                                        for i in range(cols)
+                                    )).transpose()
+                                )
+                            ),
+                            list(
+                                torch.tensor(
+                                    np.vstack((
+                                        list(
+                                            batch[outcome[0]][0][i].numpy()
+                                        )
+                                        for i in range(cols)
+                                    )).transpose()
+                                )
+                            ),
+                            [torch.tensor(
+                                [outcome[1]]
+                            )] * rows
+                        )
+
+                #data_collator = DataCollatorForSeq2Seq(
+                    #tokenizer=self.tokenizer,
+                    #model=self.model
+                #)
+
+                data_collator = lambda features: {
+                    "input_ids": torch.tensor(
+                        [f["input_ids"] for f in features]
+                    ).squeeze(1),
+                    "input_ids_chosen": torch.tensor(
+                        [f["input_ids_chosen"] for f in features]
+                    ).squeeze(1),
+                    "input_ids_rejected": torch.tensor(
+                        [f["input_ids_rejected"] for f in features]
+                    ).squeeze(1),
+                    "attention_mask": torch.tensor(
+                        [f["attention_mask"] for f in features]
+                    ).squeeze(1),
+                    "attention_mask_chosen": torch.tensor(
+                        [f["attention_mask_chosen"] for f in features]
+                    ).squeeze(1),
+                    "attention_mask_rejected": torch.tensor(
+                        [f["attention_mask_rejected"] for f in features]
+                    ).squeeze(1),
+                    "decoder_input_ids": torch.tensor(
+                        [f["decoder_input_ids"] for f in features]
+                    ).squeeze(1),
+                }
+
+                # wrap original model with the LoRA adapter.
+                # only the LoRA parameters will be trainable.
+                # and re-enable hidden states
+                # and define decoder input ids as a
+                # list to prevent JSON serialization errors during trainer.train()
+
                 # integrate LoRA using PEFT
                 #
                 # adjust the following LoRA configuration as needed
@@ -621,47 +807,17 @@ class Modeling:
                     lora_dropout=self.lora_dropout_rate,  # dropout probability for LoRA layers
                 )
 
-                # wrap your original model with the LoRA adapter.
-                # only the LoRA parameters will be trainable.
-                # and re-enable hidden states
-                # and define decoder input ids as a
-                # list to prevent JSON serialization errors during trainer.train()
-
                 # the modified model with peft
-                self.model = get_peft_model(self.model, lora_config)
+                #
+                # issues with trl v. 0.11.4 in the file
+                # /usr/local/anaconda3/lib/python3.9/site-packages/trl/models/modeling_value_head.py
+                # since get_peft_model adds duplicate output_hidden_states in **kwargs
+                # that causes the forward method to throw an error as this parameter
+                # is already explicitly being passed in and set to True
 
-                # handle serialization that causes issues during
-                # training when to_json_config is called but there
-                # is no child class of JSONEncoder in the file
-                # /usr/local/anaconda3/lib/python3.9/json/encoder.py
-                # where the default method is overridden to handle
-                # serialization of objects that are not serializable
-                self.model.config = self.model_config_serialization()
-
-                # train the model
-
-                training_args = RewardConfig(
-                    output_dir="./models/results",
-                    report_to=None,
-                    num_train_epochs=self.model_training_epochs,
-                    per_device_train_batch_size=dataset.__len__(),
-                    warmup_steps=min(500,dataset.__len__()),
-                    weight_decay=0.01,
-                    logging_dir="./logs",
-                    logging_steps=10,
-                    remove_unused_columns=False,
-                )
-
-                # now train the reinforcement learning model
-                # using the reward model just trained
-
-                sys.argv[0] = os.path.basename(__file__)
-
-                parser = HfArgumentParser((PPOConfig, ModelConfig))
-
-                ppo_training_args, model_args = parser.parse_args_into_dataclasses()
-
-                peft_config = get_peft_config(model_args)
+                #self.model = get_peft_model(self.model, lora_config)
+                #self.original_forward = self.model.forward
+                #self.model.forward = MethodType(self._forward, self.model)
 
                 trainer = RewardTrainer(
                     model=self.model,
@@ -669,45 +825,10 @@ class Modeling:
                     args=training_args,
                     train_dataset=tokenized_dataset,
                     peft_config=peft_config,
-                    data_collator=lambda features: {
-                        "input_ids": torch.tensor(
-                            [f["input_ids"] for f in features]
-                        ),
-                        "input_ids_chosen": torch.tensor(
-                            [f["input_ids_chosen"] for f in features]
-                        ),
-                        "input_ids_rejected": torch.tensor(
-                            [f["input_ids_rejected"] for f in features]
-                        ),
-                        "attention_mask": torch.tensor(
-                            [f["attention_mask"] for f in features]
-                        ),
-                        "attention_mask_chosen": torch.tensor(
-                            [f["attention_mask_chosen"] for f in features]
-                        ),
-                        "attention_mask_rejected": torch.tensor(
-                            [f["attention_mask_rejected"] for f in features]
-                        ),
-                        "decoder_input_ids": torch.tensor(
-                            [f["decoder_input_ids"] for f in features]
-                        )
-                    }
+                    data_collator=data_collator,
                 )
 
                 trainer.train()
-
-                ppo_trainer = PPOTrainer(
-                    args=ppo_training_args,
-                    processing_class=self.tokenizer,
-                    model=self.model,
-                    ref_model=self.model,
-                    reward_model=self.model,
-                    value_model=self.model,
-                    train_dataset=tokenized_dataset,
-                    peft_config=peft_config,
-                )
-
-                ppo_trainer.train()
 
             else:
 
@@ -723,22 +844,24 @@ class Modeling:
                     remove_unused_columns=False,
                 )
 
+                data_collator=lambda features: {
+                    "input_ids": torch.tensor(
+                        [f["input_ids"] for f in features]
+                    ).squeeze(1),
+                    "attention_mask": torch.tensor(
+                        [f["attention_mask"] for f in features]
+                    ).squeeze(1),
+                    "decoder_input_ids": torch.tensor(
+                        [f["decoder_input_ids"] for f in features]
+                    ).squeeze(1)
+                }
+
                 trainer = Trainer(
                     model=self.model,
                     tokenizer=self.tokenizer,
                     args=training_args,
                     train_dataset=tokenized_dataset,
-                    data_collator=lambda features: {
-                        "input_ids": torch.tensor(
-                            [f["input_ids"] for f in features]
-                        ).squeeze(1),
-                        "attention_mask": torch.tensor(
-                            [f["attention_mask"] for f in features]
-                        ).squeeze(1),
-                        "decoder_input_ids": torch.tensor(
-                            [f["decoder_input_ids"] for f in features]
-                        ).squeeze(1)
-                    }
+                    data_collator=data_collator,
                 )
 
                 trainer.train()
