@@ -672,15 +672,8 @@ class Modeling:
                 # train the model
 
                 # now train the reinforcement learning model
-                # using the reward model just trained
 
                 sys.argv[0] = os.path.basename(__file__)
-
-                parser = HfArgumentParser((PPOConfig, ModelConfig))
-
-                ppo_training_args, model_args = parser.parse_args_into_dataclasses()
-
-                peft_config = get_peft_config(model_args)
 
                 training_args = RewardConfig(
                     output_dir="./models/results",
@@ -761,35 +754,6 @@ class Modeling:
                             queries, responses, rewards
                         )
 
-                #data_collator = DataCollatorForSeq2Seq(
-                    #tokenizer=self.tokenizer,
-                    #model=self.model
-                #)
-
-                data_collator = lambda features: {
-                    "input_ids": torch.tensor(
-                        [f["input_ids"] for f in features]
-                    ).squeeze(1),
-                    "input_ids_chosen": torch.tensor(
-                        [f["input_ids_chosen"] for f in features]
-                    ).squeeze(1),
-                    "input_ids_rejected": torch.tensor(
-                        [f["input_ids_rejected"] for f in features]
-                    ).squeeze(1),
-                    "attention_mask": torch.tensor(
-                        [f["attention_mask"] for f in features]
-                    ).squeeze(1),
-                    "attention_mask_chosen": torch.tensor(
-                        [f["attention_mask_chosen"] for f in features]
-                    ).squeeze(1),
-                    "attention_mask_rejected": torch.tensor(
-                        [f["attention_mask_rejected"] for f in features]
-                    ).squeeze(1),
-                    "decoder_input_ids": torch.tensor(
-                        [f["decoder_input_ids"] for f in features]
-                    ).squeeze(1),
-                }
-
                 # wrap original model with the LoRA adapter.
                 # only the LoRA parameters will be trainable.
                 # and re-enable hidden states
@@ -823,9 +787,44 @@ class Modeling:
                 # that causes the forward method to throw an error as this parameter
                 # is already explicitly being passed in and set to True
 
-                #self.model = get_peft_model(self.model, lora_config)
+                self.model = get_peft_model(self.model, lora_config)
                 #self.original_forward = self.model.forward
                 #self.model.forward = MethodType(self._forward, self.model)
+
+                parser = HfArgumentParser((PPOConfig, ModelConfig))
+
+                ppo_training_args, model_args = parser.parse_args_into_dataclasses()
+
+                peft_config = get_peft_config(model_args)
+
+                #data_collator = DataCollatorForSeq2Seq(
+                    #tokenizer=self.tokenizer,
+                    #model=self.model
+                #)
+
+                data_collator = lambda features: {
+                    "input_ids": torch.tensor(
+                        [f["input_ids"] for f in features]
+                    ).squeeze(1),
+                    "input_ids_chosen": torch.tensor(
+                        [f["input_ids_chosen"] for f in features]
+                    ).squeeze(1),
+                    "input_ids_rejected": torch.tensor(
+                        [f["input_ids_rejected"] for f in features]
+                    ).squeeze(1),
+                    "attention_mask": torch.tensor(
+                        [f["attention_mask"] for f in features]
+                    ).squeeze(1),
+                    "attention_mask_chosen": torch.tensor(
+                        [f["attention_mask_chosen"] for f in features]
+                    ).squeeze(1),
+                    "attention_mask_rejected": torch.tensor(
+                        [f["attention_mask_rejected"] for f in features]
+                    ).squeeze(1),
+                    "decoder_input_ids": torch.tensor(
+                        [f["decoder_input_ids"] for f in features]
+                    ).squeeze(1),
+                }
 
                 trainer = RewardTrainer(
                     model=self.model,
