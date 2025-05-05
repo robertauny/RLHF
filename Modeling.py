@@ -716,41 +716,49 @@ class Modeling:
                     #training_data_collator=data_collator,
                 )
 
-                dataloader = DataLoader(
-                    tokenized_dataset,
-                    batch_size=ppo_config.batch_size,
-                    shuffle=True
-                )
+                # determine the number of batches given the batch size
+                num_batches = dataset.__len__() / ppo_config.batch_size
+                if not int(num_batches) == num_batches:
+                    num_batches += 1
+                num_batches = int(num_batches)
 
-                for batch in dataloader:
-                    cols = len(batch["input_ids"][0])
-                    rows = len(batch["input_ids"][0][0])
+                # for each batch, get the list of
+                # queries, responses and rewards tensors
+                # here, preference-based reinforcement learning
+                # is applied where the preferred response gets
+                # all of the reward and the other gets none
+                for num in range(num_batches):
+                    batch = range(
+                        (num * ppo_config.batch_size),
+                        min(
+                            (num + 1) * ppo_config.batch_size,
+                            dataset.__len__()
+                        )
+                    )
+                    queries = list(
+                        torch.stack([
+                            torch.tensor(
+                                tokenized_dataset[b]["input_ids"]
+                            )
+                            for b in batch
+                        ]).squeeze(1)
+                    )
                     for outcome in [["input_ids_chosen", 1.0], ["input_ids_rejected", 0.0]]:
-                        continue
-                        ppo_trainer.step(
-                            list(
+                        responses = list(
+                            torch.stack([
                                 torch.tensor(
-                                    np.vstack((
-                                        list(
-                                            batch["input_ids"][0][i].numpy()
-                                        )
-                                        for i in range(cols)
-                                    )).transpose()
+                                    tokenized_dataset[b][outcome[0]]
                                 )
-                            ),
-                            list(
-                                torch.tensor(
-                                    np.vstack((
-                                        list(
-                                            batch[outcome[0]][0][i].numpy()
-                                        )
-                                        for i in range(cols)
-                                    )).transpose()
-                                )
-                            ),
-                            [torch.tensor(
+                                for b in batch
+                            ]).squeeze(1)
+                        )
+                        rewards = [
+                            torch.tensor(
                                 [outcome[1]]
-                            )] * rows
+                            )
+                        ] * len(batch)
+                        ppo_trainer.step(
+                            queries, responses, rewards
                         )
 
                 #data_collator = DataCollatorForSeq2Seq(
