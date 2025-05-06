@@ -41,8 +41,6 @@ from types import MethodType
 
 from datetime import datetime, timezone
 
-from torch.utils.data import DataLoader
-
 from transformers.models.t5.modeling_t5 import(
     T5Model,
     T5Stack,
@@ -787,7 +785,7 @@ class Modeling:
                 # that causes the forward method to throw an error as this parameter
                 # is already explicitly being passed in and set to True
 
-                self.model = get_peft_model(self.model, lora_config)
+                #self.model = get_peft_model(self.model, lora_config)
                 #self.original_forward = self.model.forward
                 #self.model.forward = MethodType(self._forward, self.model)
 
