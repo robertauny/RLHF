@@ -667,11 +667,81 @@ class Modeling:
                 # serialization of objects that are not serializable
                 self.model.config = self.model_config_serialization()
 
-                # train the model
+                # wrap original model with the LoRA adapter.
+                # only the LoRA parameters will be trainable.
+                # and re-enable hidden states
+                # and define decoder input ids as a
+                # list to prevent JSON serialization errors during trainer.train()
 
-                # now train the reinforcement learning model
+                # integrate LoRA using PEFT
+                #
+                # adjust the following LoRA configuration as needed
+                #
+                # Note the task type
+                #
+                # for seq2seq model (e.g., t5) use TaskType.SEQ_2_SEQ_LM
+                # causal language model use TaskType.CAUSAL_LM
+                #
+                # use SVD to determine rank to use in LoRA
+                lora_rank = self.determine_lora_rank(tokenized_dataset)
+                # configure lora
+                lora_config = LoraConfig(
+                    task_type=TaskType.SEQ_2_SEQ_LM,      # adjust if necessary
+                    r=lora_rank,                          # LoRA rank (number of low-rank matrices)
+                    lora_alpha=self.lora_scaling_factor,  # scaling factor for the LoRA updates
+                    lora_dropout=self.lora_dropout_rate,  # dropout probability for LoRA layers
+                )
+
+                # the modified model with peft
+                #
+                # issues with trl v. 0.11.4 in the file
+                # /usr/local/anaconda3/lib/python3.9/site-packages/trl/models/modeling_value_head.py
+                # since get_peft_model adds duplicate output_hidden_states in **kwargs
+                # that causes the forward method to throw an error as this parameter
+                # is already explicitly being passed in and set to True
 
                 sys.argv[0] = os.path.basename(__file__)
+
+                parser = HfArgumentParser((PPOConfig, ModelConfig))
+
+                ppo_training_args, model_args = parser.parse_args_into_dataclasses()
+
+                peft_config = get_peft_config(model_args)
+
+                #self.model = get_peft_model(self.model, lora_config)
+                #self.original_forward = self.model.forward
+                #self.model.forward = MethodType(self._forward, self.model)
+
+                #data_collator = DataCollatorForSeq2Seq(
+                    #tokenizer=self.tokenizer,
+                    #model=self.model
+                #)
+
+                data_collator = lambda features: {
+                    "input_ids": torch.tensor(
+                        [f["input_ids"] for f in features]
+                    ).squeeze(1),
+                    "input_ids_chosen": torch.tensor(
+                        [f["input_ids_chosen"] for f in features]
+                    ).squeeze(1),
+                    "input_ids_rejected": torch.tensor(
+                        [f["input_ids_rejected"] for f in features]
+                    ).squeeze(1),
+                    "attention_mask": torch.tensor(
+                        [f["attention_mask"] for f in features]
+                    ).squeeze(1),
+                    "attention_mask_chosen": torch.tensor(
+                        [f["attention_mask_chosen"] for f in features]
+                    ).squeeze(1),
+                    "attention_mask_rejected": torch.tensor(
+                        [f["attention_mask_rejected"] for f in features]
+                    ).squeeze(1),
+                    "decoder_input_ids": torch.tensor(
+                        [f["decoder_input_ids"] for f in features]
+                    ).squeeze(1),
+                }
+
+                # train the model
 
                 training_args = RewardConfig(
                     output_dir="./models/results",
@@ -684,6 +754,19 @@ class Modeling:
                     logging_steps=10,
                     remove_unused_columns=False,
                 )
+
+                trainer = RewardTrainer(
+                    model=self.model,
+                    tokenizer=self.tokenizer,
+                    args=training_args,
+                    train_dataset=tokenized_dataset,
+                    peft_config=peft_config,
+                    data_collator=data_collator,
+                )
+
+                trainer.train()
+
+                # now train the reinforcement learning model
 
                 ppo_config = PPOConfig(
                     learning_rate=training_args.learning_rate,
@@ -751,89 +834,6 @@ class Modeling:
                         ppo_trainer.step(
                             queries, responses, rewards
                         )
-
-                # wrap original model with the LoRA adapter.
-                # only the LoRA parameters will be trainable.
-                # and re-enable hidden states
-                # and define decoder input ids as a
-                # list to prevent JSON serialization errors during trainer.train()
-
-                # integrate LoRA using PEFT
-                #
-                # adjust the following LoRA configuration as needed
-                #
-                # Note the task type
-                #
-                # for seq2seq model (e.g., t5) use TaskType.SEQ_2_SEQ_LM
-                # causal language model use TaskType.CAUSAL_LM
-                #
-                # use SVD to determine rank to use in LoRA
-                lora_rank = self.determine_lora_rank(tokenized_dataset)
-                # configure lora
-                lora_config = LoraConfig(
-                    task_type=TaskType.SEQ_2_SEQ_LM,      # adjust if necessary
-                    r=lora_rank,                          # LoRA rank (number of low-rank matrices)
-                    lora_alpha=self.lora_scaling_factor,  # scaling factor for the LoRA updates
-                    lora_dropout=self.lora_dropout_rate,  # dropout probability for LoRA layers
-                )
-
-                # the modified model with peft
-                #
-                # issues with trl v. 0.11.4 in the file
-                # /usr/local/anaconda3/lib/python3.9/site-packages/trl/models/modeling_value_head.py
-                # since get_peft_model adds duplicate output_hidden_states in **kwargs
-                # that causes the forward method to throw an error as this parameter
-                # is already explicitly being passed in and set to True
-
-                #self.model = get_peft_model(self.model, lora_config)
-                #self.original_forward = self.model.forward
-                #self.model.forward = MethodType(self._forward, self.model)
-
-                parser = HfArgumentParser((PPOConfig, ModelConfig))
-
-                ppo_training_args, model_args = parser.parse_args_into_dataclasses()
-
-                peft_config = get_peft_config(model_args)
-
-                #data_collator = DataCollatorForSeq2Seq(
-                    #tokenizer=self.tokenizer,
-                    #model=self.model
-                #)
-
-                data_collator = lambda features: {
-                    "input_ids": torch.tensor(
-                        [f["input_ids"] for f in features]
-                    ).squeeze(1),
-                    "input_ids_chosen": torch.tensor(
-                        [f["input_ids_chosen"] for f in features]
-                    ).squeeze(1),
-                    "input_ids_rejected": torch.tensor(
-                        [f["input_ids_rejected"] for f in features]
-                    ).squeeze(1),
-                    "attention_mask": torch.tensor(
-                        [f["attention_mask"] for f in features]
-                    ).squeeze(1),
-                    "attention_mask_chosen": torch.tensor(
-                        [f["attention_mask_chosen"] for f in features]
-                    ).squeeze(1),
-                    "attention_mask_rejected": torch.tensor(
-                        [f["attention_mask_rejected"] for f in features]
-                    ).squeeze(1),
-                    "decoder_input_ids": torch.tensor(
-                        [f["decoder_input_ids"] for f in features]
-                    ).squeeze(1),
-                }
-
-                trainer = RewardTrainer(
-                    model=self.model,
-                    tokenizer=self.tokenizer,
-                    args=training_args,
-                    train_dataset=tokenized_dataset,
-                    peft_config=peft_config,
-                    data_collator=data_collator,
-                )
-
-                trainer.train()
 
             else:
 
