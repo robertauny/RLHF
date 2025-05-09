@@ -129,9 +129,11 @@ class CustomAutoModelConfig:
     ## Purpose:   Initialize an object with some defaults
     ##
     ############################################################################
-    def __init__(self, model=None):
+    def __init__(self, model=None, **kwargs):
 
         self.model = model
+
+        self.model.forward = MethodType(self.forward, self.model)
 
         # initialize by copying attributes from an existing instance
 
@@ -196,6 +198,36 @@ class CustomAutoModelConfig:
     ############################################################################
     def __getitem__(self, key):
         return getattr(self, key)
+
+    ############################################################################
+    ##
+    ## Purpose:   Override the model class forward (remove output_hidden_states)
+    ##
+    ############################################################################
+    def forward(
+        self,
+        past_key_values=None,
+        attention_mask=None,
+        return_past_key_values=False,
+        **kwargs,
+    ):
+        # we overrode the original forward because input_ids
+        # and output_hidden_states were being passed twice
+        # once as a named input then in kwargs ... so we
+        # dropped input_ids in the named parameters from this
+        # override, then got it from kwargs to pass to the
+        # original implementation ... with states, we just
+        # needed to pop it out of kwargs
+        input_ids = kwargs.pop("input_ids")
+        kwargs.pop("output_hidden_states")
+        return self.model.__class__.forward(
+            self,
+            input_ids=None,
+            past_key_values=None,
+            attention_mask=None,
+            return_past_key_values=False,
+            **kwargs,
+        )
 
 ############################################################################
 ##
@@ -420,16 +452,6 @@ class Modeling:
 
     ############################################################################
     ##
-    ## Purpose:   Custom forward method to get rid of output_hidden_states
-    ##
-    ############################################################################
-    def _forward(self, *args, **kwargs):
-        kwargs.pop("output_hidden_states", None)
-        kwargs.pop("input_ids", None)
-        return self.original_forward(*args, **kwargs)
-
-    ############################################################################
-    ##
     ## Purpose:   Required encoder/decoder function that has to be defined.
     ##
     ############################################################################
@@ -565,7 +587,7 @@ class Modeling:
     ## Purpose:   Handle serialization issues of model config
     ##
     ############################################################################
-    def model_config_serialization(self):
+    def model_config_serialization(self, **kwargs):
 
         # add this missing method to the model object
         self.model._prepare_encoder_decoder_kwargs_for_generation = MethodType(
@@ -587,7 +609,7 @@ class Modeling:
         self.model.config.decoder_input_ids = decoder_input_ids
 
         # assign the serializable config to the model
-        return CustomAutoModelConfig(self.model)
+        return CustomAutoModelConfig(self.model, **kwargs)
 
     ############################################################################
     ##
@@ -665,6 +687,13 @@ class Modeling:
                 # /usr/local/anaconda3/lib/python3.9/json/encoder.py
                 # where the default method is overridden to handle
                 # serialization of objects that are not serializable
+                #
+                # first let's save the current forward
+                save_forward = self.model.forward.__func__
+                # now we will update the model config which
+                # also means updating the forward to handle
+                # multiple parameters that are passed in the parameters
+                # and the named arguments (kwargs)
                 self.model.config = self.model_config_serialization()
 
                 # wrap original model with the LoRA adapter.
@@ -708,9 +737,7 @@ class Modeling:
 
                 peft_config = get_peft_config(model_args)
 
-                #self.model = get_peft_model(self.model, lora_config)
-                #self.original_forward = self.model.forward
-                #self.model.forward = MethodType(self._forward, self.model)
+                self.model = get_peft_model(self.model, lora_config)
 
                 #data_collator = DataCollatorForSeq2Seq(
                     #tokenizer=self.tokenizer,
@@ -764,6 +791,9 @@ class Modeling:
                     data_collator=data_collator,
                 )
 
+                # now for training we need the original forward
+                self.model.forward = MethodType(save_forward, self.model)
+
                 trainer.train()
 
                 # now train the reinforcement learning model
@@ -786,8 +816,6 @@ class Modeling:
                     dataset=tokenized_dataset,
                     optimizer=torch.optim.AdamW,
                     lr_scheduler=None,
-                    #data_collator=data_collator,
-                    #training_data_collator=data_collator,
                 )
 
                 # determine the number of batches given the batch size
