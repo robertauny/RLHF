@@ -222,7 +222,7 @@ class CustomAutoModelConfig:
         kwargs.pop("output_hidden_states")
         return self.model.__class__.forward(
             self,
-            input_ids=None,
+            input_ids=input_ids,
             past_key_values=None,
             attention_mask=None,
             return_past_key_values=False,
